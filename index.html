@@ -1108,31 +1108,34 @@ const AREA_CONFIG = {
   mapCanvas.addEventListener('click', async evt => {
     const pos = getCanvasPos(evt, mapCanvas);
 
-    if (drawMode) {
-      if (!drawStart) {
-        drawStart = pos;
-        setModeLabel('Mode: Drawing end point');
-        drawMap();
-        return;
-      }
+if (drawMode) {
+  if (!drawStart) {
+    drawStart = pos;
+    setModeLabel('Mode: Drawing end point');
+    drawMap();
+    return;
+  }
 
-      customSection = {
-        id: 'custom-' + Date.now(),
-        name: 'Custom Section',
-        color: '#ff4d4f',
-        p1: drawStart,
-        p2: pos
-      };
+  customSection = {
+    id: 'custom-' + Date.now(),
+    name: 'Custom Section',
+    color: '#ff4d4f',
+    p1: drawStart,
+    p2: pos
+  };
 
-      drawStart = null;
-      drawMode = false;
-      hoverT = null;
-      setModeLabel('Mode: Custom section ready');
+  // stop drawing mode immediately after second click
+  drawStart = null;
+  drawMode = false;
+  hoverT = null;
 
-      await ensureBackendReady();
-      updateProfile();
-      return;
-    }
+  setModeLabel('Mode: Custom section ready');
+
+  await ensureBackendReady();
+  updateProfile();
+  drawMap();
+  return;
+}
 
     await ensureBackendReady();
 
@@ -1228,22 +1231,40 @@ const AREA_CONFIG = {
     drawMap();
   });
 
-  document.getElementById('drawBtn').addEventListener('click', () => {
-    drawMode = true;
-    drawStart = null;
-    customSection = null;
-    setModeLabel('Mode: Click start point');
-    drawMap();
-  });
+document.getElementById('drawBtn').addEventListener('click', () => {
+  // always start a fresh custom line
+  drawMode = true;
+  drawStart = null;
+  customSection = null;
+  hoverT = null;
 
-  document.getElementById('clearBtn').addEventListener('click', () => {
-    customSection = null;
-    drawMode = false;
-    drawStart = null;
-    hoverT = null;
-    setModeLabel('Mode: Preset sections');
-    updateProfile();
-  });
+  // keep presets available, but don't let the old custom line hang around
+  setModeLabel('Mode: Click start point');
+  document.getElementById('liveProfileValue').textContent = '—';
+  document.getElementById('liveMapValue').textContent = '—';
+
+  drawProfile();
+  drawMap();
+});
+
+document.getElementById('clearBtn').addEventListener('click', () => {
+  // fully clear custom drawing state
+  customSection = null;
+  drawMode = false;
+  drawStart = null;
+  hoverT = null;
+  profileSamples = [];
+
+  // optionally fall back to the first preset if it exists
+  activeSection = presets[0] || null;
+
+  setModeLabel('Mode: Preset sections');
+  document.getElementById('liveProfileValue').textContent = '—';
+  document.getElementById('liveMapValue').textContent = '—';
+
+  updateProfile();
+  drawMap();
+});
 
   document.getElementById('overlayOpacity').addEventListener('input', drawMap);
 
