@@ -528,44 +528,86 @@
   let backendLoading = false;
   let backendReady = false;
 
-  const AREA_CONFIG = {
-    area8: {
-      label: 'Area 8',
-      ortho: '/assets/section8_ortho.jpg',
-      dsm: '/assets/section8_dsm.png',
-      cog: '/assets/A8_DSM_web_1m_translate.tif',
-      presets: [
-        {
-          id: 'sec1',
-          name: 'Channel Cross Section',
-          color: '#ff6b6b',
-          p1: { x: 105, y: 430 },
-          p2: { x: 1185, y: 430 }
-        },
-        {
-          id: 'sec2',
-          name: 'West Vertical Section',
-          color: '#38bdf8',
-          p1: { x: 325, y: 55 },
-          p2: { x: 325, y: 755 }
-        },
-        {
-          id: 'sec3',
-          name: 'East Vertical Section',
-          color: '#fbbf24',
-          p1: { x: 780, y: 75 },
-          p2: { x: 780, y: 730 }
-        }
-      ]
-    },
-    area1: { label: 'Area 1', ortho: '/assets/section1_ortho.jpg', dsm: '/assets/section1_dsm.png', cog: '', presets: [] },
-    area2: { label: 'Area 2', ortho: '/assets/section2_ortho.jpg', dsm: '/assets/section2_dsm.png', cog: '', presets: [] },
-    area3: { label: 'Area 3', ortho: '/assets/section3_ortho.jpg', dsm: '/assets/section3_dsm.png', cog: '', presets: [] },
-    area4: { label: 'Area 4', ortho: '/assets/section4_ortho.jpg', dsm: '/assets/section4_dsm.png', cog: '', presets: [] },
-    area5: { label: 'Area 5', ortho: '/assets/section5_ortho.jpg', dsm: '/assets/section5_dsm.png', cog: '', presets: [] },
-    area6: { label: 'Area 6', ortho: '/assets/section6_ortho.jpg', dsm: '/assets/section6_dsm.png', cog: '', presets: [] },
-    area7: { label: 'Area 7', ortho: '/assets/section7_ortho.jpg', dsm: '/assets/section7_dsm.png', cog: '', presets: [] }
-  };
+const AREA_CONFIG = {
+  area1: {
+    label: 'Area 1',
+    ortho: '/assets/area1/ortho.jpg',
+    dsm: '/assets/area1/dsm.png',
+    cog: '/assets/area1/dsm_backend_2m.tif',
+    presets: []
+  },
+  area2: {
+    label: 'Area 2',
+    ortho: '/assets/area2/ortho.jpg',
+    dsm: '/assets/area2/dsm.png',
+    cog: '/assets/area2/dsm_backend_2m.tif',
+    presets: []
+  },
+  area3: {
+    label: 'Area 3',
+    ortho: '/assets/area3/ortho.jpg',
+    dsm: '/assets/area3/dsm.png',
+    cog: '/assets/area3/dsm_backend_2m.tif',
+    presets: []
+  },
+  area4: {
+    label: 'Area 4',
+    ortho: '/assets/area4/ortho.jpg',
+    dsm: '/assets/area4/dsm.png',
+    cog: '/assets/area4/dsm_backend_2m.tif',
+    presets: []
+  },
+  area5: {
+    label: 'Area 5',
+    ortho: '/assets/area5/ortho.jpg',
+    dsm: '/assets/area5/dsm.png',
+    cog: '/assets/area5/dsm_backend_2m.tif',
+    presets: []
+  },
+  area6: {
+    label: 'Area 6',
+    ortho: '/assets/area6/ortho.jpg',
+    dsm: '/assets/area6/dsm.png',
+    cog: '/assets/area6/dsm_backend_2m.tif',
+    presets: []
+  },
+  area7: {
+    label: 'Area 7',
+    ortho: '/assets/area7/ortho.jpg',
+    dsm: '/assets/area7/dsm.png',
+    cog: '/assets/area7/dsm_backend_2m.tif',
+    presets: []
+  },
+  area8: {
+    label: 'Area 8',
+    ortho: '/assets/area8/ortho.jpg',
+    dsm: '/assets/area8/dsm.png',
+    cog: '/assets/area8/dsm_backend_1m.tif',
+    presets: [
+      {
+        id: 'sec1',
+        name: 'Channel Cross Section',
+        color: '#ff6b6b',
+        p1: { x: 105, y: 430 },
+        p2: { x: 1185, y: 430 }
+      },
+      {
+        id: 'sec2',
+        name: 'West Vertical Section',
+        color: '#38bdf8',
+        p1: { x: 325, y: 55 },
+        p2: { x: 325, y: 755 }
+      },
+      {
+        id: 'sec3',
+        name: 'East Vertical Section',
+        color: '#fbbf24',
+        p1: { x: 780, y: 75 },
+        p2: { x: 780, y: 730 }
+      }
+    ]
+  }
+};
 
   let currentAreaKey = 'area8';
   let orthoLoaded = false;
