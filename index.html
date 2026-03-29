@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Padstow Section Profiler</title>
+  <style>
+    :root {
+      --bg: #08111c;
+      --panel: rgba(14, 27, 41, 0.92);
+      --panel-2: rgba(18, 33, 50, 0.95);
+      --line: rgba(125, 211, 252, 0.14);
+      --text: #eef6ff;
+      --muted: #9db5c9;
+      --accent: #7dd3fc;
+      --accent-2: #38bdf8;
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(56, 189, 248, 0.12), transparent 26%),
+        radial-gradient(circle at top right, rgba(125, 211, 252, 0.08), transparent 22%),
+        linear-gradient(180deg, #09111d 0%, #0a1321 100%);
+    }
+
+    .wrap {
+      max-width: 1540px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .hero,
+    .card,
+    .toolbar,
+    .note {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+    }
+
+    .hero {
+      padding: 22px 24px;
+      margin-bottom: 18px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(125, 211, 252, 0.1);
+      color: var(--accent);
+      border: 1px solid rgba(125, 211, 252, 0.14);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(28px, 4vw, 46px);
+      line-height: 1.04;
+      letter-spacing: -.03em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 920px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 14px;
+      padding: 16px;
+      margin-bottom: 18px;
+    }
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .field label {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 12px;
+      padding: 11px 12px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .button-row,
+    .chip-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 11px 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: .18s ease;
+    }
+
+    button:hover { transform: translateY(-1px); filter: brightness(1.06); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-2), var(--accent));
+      color: #031522;
+    }
+
+    .btn-secondary {
+      background: #1e2b45;
+      color: var(--text);
+      border: 1px solid #31425f;
+    }
+
+    .chip {
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: #1e2b45;
+      border: 1px solid #31425f;
+      color: #d8e8ff;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .chip.active {
+      background: rgba(125, 211, 252, .12);
+      border-color: rgba(125, 211, 252, .4);
+      color: white;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+
+    .lower-grid {
+      display: grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 18px;
+    }
+
+    .card {
+      padding: 16px;
+    }
+
+    .panel-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .panel-title h2 {
+      margin: 0;
+      font-size: 18px;
+      letter-spacing: -.01em;
+    }
+
+    .small { color: var(--muted); font-size: 13px; }
+
+    .map-shell {
+      position: relative;
+      border-radius: 18px;
+      overflow: hidden;
+      background: #0d1625;
+      border: 1px solid rgba(255,255,255,.06);
+      min-height: 420px;
+      height: clamp(420px, 58vw, 760px);
+    }
+
+    canvas#mapCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: crosshair;
+      touch-action: none;
+    }
+
+    .map-overlay {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      right: 14px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      pointer-events: none;
+    }
+
+    .overlay-badge,
+    .overlay-readout {
+      pointer-events: auto;
+      background: rgba(8, 17, 28, .78);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 14px;
+      padding: 10px 12px;
+      font-size: 13px;
+      color: #e8f4ff;
+    }
+
+    .overlay-readout { margin-left: auto; }
+
+    .floating-readout {
+      position: absolute;
+      display: none;
+      pointer-events: none;
+      z-index: 8;
+      background: rgba(8, 17, 28, .88);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 12px;
+      padding: 7px 10px;
+      font-size: 12px;
+      color: #e8f4ff;
+      box-shadow: 0 10px 24px rgba(0,0,0,.28);
+      white-space: nowrap;
+    }
+
+    .map-tooltip { top: 0; left: 0; }
+    .profile-tooltip { top: 0; left: 0; }
+
+    .profile-wrap {
+      position: relative;
+      border-radius: 18px;
+      overflow: hidden;
+      background: #0d1625;
+      border: 1px solid rgba(255,255,255,.06);
+      min-height: 280px;
+      height: 320px;
+    }
+
+    canvas#profileCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: crosshair;
+    }
+
+    .list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .item {
+      padding: 12px 13px;
+      border-radius: 15px;
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(125,211,252,.08);
+    }
+
+    .item-title {
+      font-weight: 800;
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+
+    .item-meta {
+      color: var(--accent);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      margin-bottom: 8px;
+    }
+
+    .item-body {
+      color: #dae7fb;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .note {
+      padding: 15px 16px;
+      margin-top: 18px;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .inline-metric {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .mini {
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(125,211,252,.08);
+      border-radius: 14px;
+      padding: 11px 12px;
+    }
+
+    .mini .label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      margin-bottom: 6px;
+    }
+
+    .mini .value {
+      font-weight: 800;
+      font-size: 18px;
+    }
+
+    body.focus-map .profile-card,
+    body.focus-map .lower-grid,
+    body.focus-profile .map-card,
+    body.focus-profile .lower-grid,
+    body.focus-both .lower-grid {
+      display: none;
+    }
+
+    body.focus-map .map-shell {
+      height: calc(100vh - 220px);
+      max-height: none;
+    }
+
+    body.focus-profile .profile-wrap {
+      height: calc(100vh - 220px);
+      max-height: none;
+    }
+
+    body.focus-both .map-shell {
+      height: min(58vh, 760px);
+    }
+
+    body.focus-both .profile-wrap {
+      height: min(34vh, 420px);
+    }
+
+    @media (max-width: 1180px) {
+      .toolbar,
+      .lower-grid { grid-template-columns: 1fr; }
+      .controls-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 760px) {
+      .wrap { padding: 16px; }
+      .controls-grid,
+      .inline-metric { grid-template-columns: 1fr; }
+      .map-shell { min-height: 520px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="eyebrow">Padstow Estuary • Section Profiler</div>
+      <h1>Interactive estuary sections with preset and custom profile lines</h1>
+      <p>
+        This version shows the map immediately, then loads the reduced DSM backend in the background. Section profiles, hover values,
+        and map clicks all use the local reduced TIFF once it is ready.
+      </p>
+    </section>
+
+    <section class="toolbar">
+      <div class="controls-grid">
+        <div class="field">
+          <label>Area</label>
+          <select id="areaSelect">
+            <option value="area8" selected>Area 8</option>
+            <option value="area1">Area 1</option>
+            <option value="area2">Area 2</option>
+            <option value="area3">Area 3</option>
+            <option value="area4">Area 4</option>
+            <option value="area5">Area 5</option>
+            <option value="area6">Area 6</option>
+            <option value="area7">Area 7</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>DSM opacity</label>
+          <input id="overlayOpacity" type="range" min="0" max="100" value="55" />
+        </div>
+        <div class="field">
+          <label>Preset lines</label>
+          <button class="btn-secondary" id="togglePresetsBtn" type="button">Hide preset lines</button>
+        </div>
+      </div>
+      <div>
+        <div class="button-row">
+          <button class="btn-primary" id="drawBtn">Draw custom section</button>
+          <button class="btn-secondary" id="clearBtn">Clear custom section</button>
+          <button class="btn-secondary" id="expandMapBtn">Expand map</button>
+          <button class="btn-secondary" id="expandProfileBtn">Expand profile</button>
+          <button class="btn-secondary" id="expandBothBtn">Expand both</button>
+        </div>
+        <div class="chip-row" id="presetRow" style="margin-top:10px;"></div>
+      </div>
+    </section>
+
+    <section class="layout" id="mainLayout">
+      <div class="card map-card">
+        <div class="panel-title">
+          <h2>Map view</h2>
+          <div class="small">Orthomosaic base • DSM overlay • preset and custom section lines • full-width view</div>
+        </div>
+        <div class="map-shell">
+          <div class="floating-readout map-tooltip" id="mapTooltip"></div>
+          <canvas id="mapCanvas" width="1400" height="620"></canvas>
+          <div class="map-overlay">
+            <div class="overlay-badge" id="modeBadge">Mode: Preset sections</div>
+            <div class="overlay-readout" id="pointReadout">Loading map...</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card profile-card">
+        <div class="panel-title">
+          <h2>Section profile</h2>
+          <div class="small">Hover or click the profile to move the red map cursor</div>
+        </div>
+        <div class="profile-wrap">
+          <div class="floating-readout profile-tooltip" id="profileTooltip"></div>
+          <canvas id="profileCanvas" width="1400" height="280"></canvas>
+        </div>
+      </div>
+
+      <div class="lower-grid">
+        <div class="card">
+          <div class="panel-title">
+            <h2>Live inspector</h2>
+            <div class="small">Updates as you switch sections, move across the profile, and click the map</div>
+          </div>
+          <div class="inline-metric">
+            <div class="mini"><div class="label">Current section</div><div class="value" id="currentSectionName">—</div></div>
+            <div class="mini"><div class="label">Length</div><div class="value" id="sectionLength">—</div></div>
+            <div class="mini"><div class="label">Samples</div><div class="value" id="sampleCount">—</div></div>
+          </div>
+          <div class="list" style="margin-top:12px;">
+            <div class="item">
+              <div class="item-title">Current values</div>
+              <div class="item-body">
+                <strong>Profile cursor:</strong> <span id="liveProfileValue">—</span><br>
+                <strong>Map click value:</strong> <span id="liveMapValue">—</span><br>
+                <strong>Relative range:</strong> <span id="liveRangeValue">—</span>
+              </div>
+            </div>
+            <div class="item">
+              <div class="item-title">Section state</div>
+              <div class="item-body">
+                <strong>Mode:</strong> <span id="liveModeValue">Preset sections</span><br>
+                <strong>Preset lines:</strong> <span id="livePresetState">Visible</span><br>
+                <strong>Active source:</strong> <span id="liveSourceValue">Built-in section assets • loading map assets...</span>
+              </div>
+            </div>
+            <div class="item">
+              <div class="item-title">Interpretation note</div>
+              <div class="item-body" id="profileSummary">Move across the profile or click the DSM to inspect values and section behaviour.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="panel-title">
+            <h2>Preset sections</h2>
+            <div class="small">Click a saved section to load its profile instantly</div>
+          </div>
+          <div class="list" id="presetList"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="note">
+      The visible map loads first so the app feels responsive. The reduced local DSM backend is then loaded in the background and used
+      for true height values in the profile, hover readout, and map clicks.
+    </section>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/geotiff"></script>
+  <script>
+  const mapCanvas = document.getElementById('mapCanvas');
+  const mapCtx = mapCanvas.getContext('2d');
+  const profileCanvas = document.getElementById('profileCanvas');
+  const profileCtx = profileCanvas.getContext('2d');
+  const mapShell = document.querySelector('.map-shell');
+  const profileShell = document.querySelector('.profile-wrap');
+
+  const orthoImg = new Image();
+  const dsmImg = new Image();
+
+  let cogTiff = null;
+  let cogImage = null;
+  let cogNoData = -9999;
+  let cogRasterData = null;
+  let cogWidth = 0;
+  let cogHeight = 0;
+  let backendLoading = false;
+  let backendReady = false;
+
+  const AREA_CONFIG = {
+    area8: {
+      label: 'Area 8',
+      ortho: '/assets/section8_ortho.jpg',
+      dsm: '/assets/section8_dsm.png',
+      cog: '/assets/A8_DSM_web_1m_translate.tif',
+      presets: [
+        {
+          id: 'sec1',
+          name: 'Channel Cross Section',
+          color: '#ff6b6b',
+          p1: { x: 105, y: 430 },
+          p2: { x: 1185, y: 430 }
+        },
+        {
+          id: 'sec2',
+          name: 'West Vertical Section',
+          color: '#38bdf8',
+          p1: { x: 325, y: 55 },
+          p2: { x: 325, y: 755 }
+        },
+        {
+          id: 'sec3',
+          name: 'East Vertical Section',
+          color: '#fbbf24',
+          p1: { x: 780, y: 75 },
+          p2: { x: 780, y: 730 }
+        }
+      ]
+    },
+    area1: { label: 'Area 1', ortho: '/assets/section1_ortho.jpg', dsm: '/assets/section1_dsm.png', cog: '', presets: [] },
+    area2: { label: 'Area 2', ortho: '/assets/section2_ortho.jpg', dsm: '/assets/section2_dsm.png', cog: '', presets: [] },
+    area3: { label: 'Area 3', ortho: '/assets/section3_ortho.jpg', dsm: '/assets/section3_dsm.png', cog: '', presets: [] },
+    area4: { label: 'Area 4', ortho: '/assets/section4_ortho.jpg', dsm: '/assets/section4_dsm.png', cog: '', presets: [] },
+    area5: { label: 'Area 5', ortho: '/assets/section5_ortho.jpg', dsm: '/assets/section5_dsm.png', cog: '', presets: [] },
+    area6: { label: 'Area 6', ortho: '/assets/section6_ortho.jpg', dsm: '/assets/section6_dsm.png', cog: '', presets: [] },
+    area7: { label: 'Area 7', ortho: '/assets/section7_ortho.jpg', dsm: '/assets/section7_dsm.png', cog: '', presets: [] }
+  };
+
+  let currentAreaKey = 'area8';
+  let orthoLoaded = false;
+  let dsmLoaded = false;
+  let showPresets = true;
+  let presets = JSON.parse(JSON.stringify(AREA_CONFIG[currentAreaKey].presets));
+  let activeSection = presets[0] || null;
+  let customSection = null;
+  let drawMode = false;
+  let drawStart = null;
+  let hoverT = null;
+  let profileSamples = [];
+
+  const pointReadout = document.getElementById('pointReadout');
+  const mapTooltip = document.getElementById('mapTooltip');
+  const profileTooltip = document.getElementById('profileTooltip');
+
+  function setModeLabel(text) {
+    document.getElementById('modeBadge').textContent = text;
+    const liveMode = document.getElementById('liveModeValue');
+    if (liveMode) liveMode.textContent = text.replace('Mode: ', '');
+  }
+
+  function resizeCanvasToDisplay(canvas, shell) {
+    const rect = shell.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(rect.width * dpr);
+    canvas.height = Math.round(rect.height * dpr);
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { width: rect.width, height: rect.height };
+  }
+
+  function updateMapShellAspect(img) {
+    if (!img || !img.width || !img.height) return;
+    const ratio = img.height / img.width;
+    const target = Math.max(420, Math.min(760, Math.round(mapShell.clientWidth * ratio)));
+    mapShell.style.height = `${target}px`;
+    resizeCanvasToDisplay(mapCanvas, mapShell);
+  }
+
+  function ensureDefaultPlaceholder() {
+    const rect = mapShell.getBoundingClientRect();
+    mapCtx.fillStyle = '#0d1625';
+    mapCtx.fillRect(0, 0, rect.width, rect.height);
+  }
+
+  function drawImageContain(ctx, img, opacity = 1) {
+    if (!img || !img.width) return;
+    const rect = mapShell.getBoundingClientRect();
+    const scale = Math.min(rect.width / img.width, rect.height / img.height);
+    const drawW = img.width * scale;
+    const drawH = img.height * scale;
+    const x = (rect.width - drawW) / 2;
+    const y = (rect.height - drawH) / 2;
+    ctx.save();
+    ctx.globalAlpha = opacity;
+    ctx.drawImage(img, x, y, drawW, drawH);
+    ctx.restore();
+  }
+
+  function mapToImageCoordinates(x, y, img) {
+    if (!img || !img.width) return null;
+    const rect = mapShell.getBoundingClientRect();
+    const scale = Math.min(rect.width / img.width, rect.height / img.height);
+    const drawW = img.width * scale;
+    const drawH = img.height * scale;
+    const offsetX = (rect.width - drawW) / 2;
+    const offsetY = (rect.height - drawH) / 2;
+    if (x < offsetX || y < offsetY || x > offsetX + drawW || y > offsetY + drawH) return null;
+    return {
+      x: Math.round((x - offsetX) / scale),
+      y: Math.round((y - offsetY) / scale)
+    };
+  }
+
+  function lerp(a, b, t) {
+    return a + (b - a) * t;
+  }
+
+  function lineLength(section) {
+    if (!section) return 0;
+    return Math.hypot(section.p2.x - section.p1.x, section.p2.y - section.p1.y);
+  }
+
+  function getTrueHeightAtImagePoint(imgX, imgY) {
+    if (!cogRasterData || !dsmImg.width || !dsmImg.height || !cogWidth || !cogHeight) return null;
+
+    const rx = imgX / dsmImg.width;
+    const ry = imgY / dsmImg.height;
+
+    const cogX = Math.max(0, Math.min(cogWidth - 1, Math.round(rx * (cogWidth - 1))));
+    const cogY = Math.max(0, Math.min(cogHeight - 1, Math.round(ry * (cogHeight - 1))));
+
+    const idx = cogY * cogWidth + cogX;
+    const value = cogRasterData[idx];
+
+    if (
+      value === undefined ||
+      value === null ||
+      Number.isNaN(value) ||
+      value === cogNoData ||
+      value <= -9998
+    ) {
+      return null;
+    }
+
+    return Number(value);
+  }
+
+  function sampleSection(section, sampleCount = 220) {
+    if (!section || !cogRasterData) return [];
+
+    const arr = [];
+    for (let i = 0; i < sampleCount; i++) {
+      const t = i / (sampleCount - 1);
+      const x = lerp(section.p1.x, section.p2.x, t);
+      const y = lerp(section.p1.y, section.p2.y, t);
+
+      const imgPoint = mapToImageCoordinates(x, y, dsmImg);
+      const value = imgPoint ? getTrueHeightAtImagePoint(imgPoint.x, imgPoint.y) : null;
+
+      arr.push({
+        t,
+        x,
+        y,
+        value,
+        nodata: !Number.isFinite(value)
+      });
+    }
+    return arr;
+  }
+
+  function renderPresetUI() {
+    const presetRow = document.getElementById('presetRow');
+    const presetList = document.getElementById('presetList');
+    presetRow.innerHTML = '';
+    presetList.innerHTML = '';
+
+    presets.forEach(sec => {
+      const chip = document.createElement('button');
+      chip.className = 'chip' + ((activeSection && activeSection.id === sec.id && !customSection) ? ' active' : '');
+      chip.textContent = sec.name;
+      chip.onclick = async () => {
+        customSection = null;
+        activeSection = sec;
+        hoverT = null;
+        renderPresetUI();
+        setModeLabel('Mode: Preset section');
+        await ensureBackendReady();
+        updateProfile();
+        drawMap();
+      };
+      presetRow.appendChild(chip);
+
+      const item = document.createElement('div');
+      item.className = 'item';
+      item.innerHTML = `
+        <div class="item-title">${sec.name}</div>
+        <div class="item-meta">Preset section</div>
+        <div class="item-body">Saved line ready for instant profile display. Colour cue: <span style="color:${sec.color}; font-weight:700">${sec.color}</span></div>
+      `;
+      presetList.appendChild(item);
+    });
+  }
+
+  function getDisplayedSection() {
+    return customSection || activeSection;
+  }
+
+  function updateProfile() {
+    const section = getDisplayedSection();
+    profileSamples = sampleSection(section);
+    drawProfile();
+    drawMap();
+
+    document.getElementById('currentSectionName').textContent = section ? section.name : '—';
+    document.getElementById('sectionLength').textContent = section ? `${lineLength(section).toFixed(0)} px` : '—';
+    document.getElementById('sampleCount').textContent = profileSamples.length || '—';
+
+    if (section && profileSamples.length) {
+      const values = profileSamples.map(p => p.value).filter(v => Number.isFinite(v));
+      const min = values.length ? Math.min(...values) : 0;
+      const max = values.length ? Math.max(...values) : 0;
+      document.getElementById('profileSummary').textContent =
+        values.length
+          ? `${section.name} is ready. Elevation range across the reduced DSM backend is ${min.toFixed(2)} to ${max.toFixed(2)} m. Hover the profile to move the red cursor on the map, or click the DSM to read a point value.`
+          : `${section.name} is ready, but this section currently crosses no-data areas in the backend raster.`;
+      document.getElementById('liveRangeValue').textContent =
+        values.length ? `${min.toFixed(2)} to ${max.toFixed(2)} m` : 'No valid data';
+    } else {
+      document.getElementById('profileSummary').textContent =
+        backendReady
+          ? 'Select or draw a section to inspect values.'
+          : 'Select or draw a section to load the DSM height backend.';
+      document.getElementById('liveRangeValue').textContent = '—';
+    }
+  }
+
+  function drawSectionLine(sec, color, width = 3, dash = []) {
+    mapCtx.save();
+    mapCtx.strokeStyle = color;
+    mapCtx.lineWidth = width;
+    mapCtx.setLineDash(dash);
+    mapCtx.beginPath();
+    mapCtx.moveTo(sec.p1.x, sec.p1.y);
+    mapCtx.lineTo(sec.p2.x, sec.p2.y);
+    mapCtx.stroke();
+    drawHandle(sec.p1.x, sec.p1.y, color);
+    drawHandle(sec.p2.x, sec.p2.y, color);
+    mapCtx.restore();
+  }
+
+  function drawHandle(x, y, color) {
+    mapCtx.save();
+    mapCtx.fillStyle = color;
+    mapCtx.beginPath();
+    mapCtx.arc(x, y, 5, 0, Math.PI * 2);
+    mapCtx.fill();
+    mapCtx.restore();
+  }
+
+  function drawCrosshair(x, y) {
+    mapCtx.save();
+    mapCtx.strokeStyle = '#ff4d4f';
+    mapCtx.lineWidth = 2;
+    mapCtx.beginPath();
+    mapCtx.arc(x, y, 8, 0, Math.PI * 2);
+    mapCtx.stroke();
+    mapCtx.beginPath();
+    mapCtx.moveTo(x - 14, y); mapCtx.lineTo(x + 14, y);
+    mapCtx.moveTo(x, y - 14); mapCtx.lineTo(x, y + 14);
+    mapCtx.stroke();
+    mapCtx.restore();
+  }
+
+  function drawMap() {
+    const rect = mapShell.getBoundingClientRect();
+    resizeCanvasToDisplay(mapCanvas, mapShell);
+    mapCtx.clearRect(0, 0, rect.width, rect.height);
+    ensureDefaultPlaceholder();
+
+    if (orthoLoaded) drawImageContain(mapCtx, orthoImg, 1);
+
+    if (dsmLoaded) {
+      const opacity = Number(document.getElementById('overlayOpacity').value) / 100;
+      drawImageContain(mapCtx, dsmImg, opacity);
+    }
+
+    if (showPresets) {
+      presets.forEach(sec => drawSectionLine(sec, sec.color, sec === activeSection && !customSection ? 4 : 2.6));
+    }
+
+    if (customSection) drawSectionLine(customSection, '#ff4d4f', 4, [10, 7]);
+    if (drawMode && drawStart) drawHandle(drawStart.x, drawStart.y, '#ffffff');
+
+    const section = getDisplayedSection();
+    if (section && hoverT !== null) {
+      const x = lerp(section.p1.x, section.p2.x, hoverT);
+      const y = lerp(section.p1.y, section.p2.y, hoverT);
+      drawCrosshair(x, y);
+    }
+  }
+
+  function drawProfile() {
+    const rect = profileShell.getBoundingClientRect();
+    resizeCanvasToDisplay(profileCanvas, profileShell);
+    profileCtx.clearRect(0, 0, rect.width, rect.height);
+    profileCtx.fillStyle = '#0d1625';
+    profileCtx.fillRect(0, 0, rect.width, rect.height);
+
+    if (!backendReady) {
+      profileCtx.fillStyle = '#9db5c9';
+      profileCtx.font = '14px Inter, Arial';
+      profileCtx.fillText('Select or draw a section to load height data.', 30, 40);
+      return;
+    }
+
+    if (!profileSamples.length) {
+      profileCtx.fillStyle = '#9db5c9';
+      profileCtx.font = '14px Inter, Arial';
+      profileCtx.fillText('No valid section data yet.', 30, 40);
+      return;
+    }
+
+    const pad = { l: 58, r: 20, t: 18, b: 34 };
+    const w = rect.width - pad.l - pad.r;
+    const h = rect.height - pad.t - pad.b;
+
+    const values = profileSamples.map(p => p.value).filter(v => Number.isFinite(v));
+    if (!values.length) {
+      profileCtx.fillStyle = '#9db5c9';
+      profileCtx.font = '14px Inter, Arial';
+      profileCtx.fillText('No valid backend data along this section.', 30, 40);
+      return;
+    }
+
+    const minVal = Math.min(...values);
+    const maxVal = Math.max(...values);
+    const range = Math.max(0.5, maxVal - minVal);
+    const yMin = Math.floor((minVal - range * 0.08) * 10) / 10;
+    const yMax = Math.ceil((maxVal + range * 0.08) * 10) / 10;
+
+    profileCtx.strokeStyle = 'rgba(255,255,255,.08)';
+    profileCtx.lineWidth = 1;
+    const gridSteps = 6;
+    for (let i = 0; i <= gridSteps; i++) {
+      const y = pad.t + h * (i / gridSteps);
+      profileCtx.beginPath();
+      profileCtx.moveTo(pad.l, y);
+      profileCtx.lineTo(pad.l + w, y);
+      profileCtx.stroke();
+    }
+
+    profileCtx.strokeStyle = '#66e2cf';
+    profileCtx.lineWidth = 2.4;
+    profileCtx.beginPath();
+    let started = false;
+
+    profileSamples.forEach((p) => {
+      if (!Number.isFinite(p.value)) {
+        started = false;
+        return;
+      }
+
+      const x = pad.l + w * p.t;
+      const y = pad.t + h * (1 - ((p.value - yMin) / (yMax - yMin || 1)));
+
+      if (!started) {
+        profileCtx.moveTo(x, y);
+        started = true;
+      } else {
+        profileCtx.lineTo(x, y);
+      }
+    });
+
+    profileCtx.stroke();
+
+    profileCtx.strokeStyle = 'rgba(255,255,255,.14)';
+    profileCtx.lineWidth = 1.2;
+    profileCtx.beginPath();
+    profileCtx.moveTo(pad.l, pad.t);
+    profileCtx.lineTo(pad.l, pad.t + h);
+    profileCtx.lineTo(pad.l + w, pad.t + h);
+    profileCtx.stroke();
+
+    profileCtx.fillStyle = '#aab7d1';
+    profileCtx.font = '12px Inter, Arial';
+    for (let i = 0; i <= gridSteps; i++) {
+      const value = yMax - ((yMax - yMin) * (i / gridSteps));
+      const y = pad.t + h * (i / gridSteps);
+      profileCtx.fillText(value.toFixed(2), 10, y + 4);
+    }
+
+    profileCtx.fillText('Start', pad.l, pad.t + h + 22);
+    profileCtx.fillText('End', pad.l + w - 20, pad.t + h + 22);
+
+    if (hoverT !== null) {
+      const x = pad.l + w * hoverT;
+      profileCtx.strokeStyle = '#ff4d4f';
+      profileCtx.lineWidth = 2;
+      profileCtx.beginPath();
+      profileCtx.moveTo(x, pad.t);
+      profileCtx.lineTo(x, pad.t + h);
+      profileCtx.stroke();
+    }
+  }
+
+  function getCanvasPos(evt, canvas) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: evt.clientX - rect.left,
+      y: evt.clientY - rect.top
+    };
+  }
+
+  async function initCog(cogUrl) {
+    if (!cogUrl) {
+      cogTiff = null;
+      cogImage = null;
+      cogNoData = -9999;
+      cogRasterData = null;
+      cogWidth = 0;
+      cogHeight = 0;
+      backendLoading = false;
+      backendReady = false;
+      return;
+    }
+
+    try {
+      cogTiff = await GeoTIFF.fromUrl(cogUrl);
+      cogImage = await cogTiff.getImage();
+      cogNoData = cogImage.getGDALNoData ? cogImage.getGDALNoData() : -9999;
+      cogWidth = cogImage.getWidth();
+      cogHeight = cogImage.getHeight();
+    } catch (err) {
+      console.error('Failed to open DSM backend:', err);
+      cogTiff = null;
+      cogImage = null;
+      cogNoData = -9999;
+      cogRasterData = null;
+      cogWidth = 0;
+      cogHeight = 0;
+    }
+  }
+
+  async function ensureBackendReady() {
+    if (backendReady || backendLoading) return;
+    if (!AREA_CONFIG[currentAreaKey].cog) return;
+
+    backendLoading = true;
+    document.getElementById('liveSourceValue').textContent =
+      'Built-in section assets • loading DSM height backend...';
+    pointReadout.textContent = 'Loading DSM height backend...';
+
+    try {
+      if (!cogImage) {
+        await initCog(AREA_CONFIG[currentAreaKey].cog);
+      }
+
+      if (!cogImage) {
+        throw new Error('DSM image could not be opened');
+      }
+
+      const raster = await cogImage.readRasters({ interleave: true });
+      cogRasterData = raster;
+      backendReady = true;
+
+      document.getElementById('liveSourceValue').textContent =
+        'Built-in section assets • local DSM backend loaded';
+      pointReadout.textContent = 'Click the map to read DSM height';
+
+      updateProfile();
+      drawMap();
+    } catch (err) {
+      console.error('Failed to load DSM backend:', err);
+      document.getElementById('liveSourceValue').textContent =
+        'Built-in section assets • local DSM failed to load';
+      pointReadout.textContent = 'DSM backend failed to load';
+    } finally {
+      backendLoading = false;
+    }
+  }
+
+  async function loadArea(areaKey) {
+    currentAreaKey = areaKey;
+    const cfg = AREA_CONFIG[areaKey];
+
+    cogTiff = null;
+    cogImage = null;
+    cogNoData = -9999;
+    cogRasterData = null;
+    cogWidth = 0;
+    cogHeight = 0;
+    backendLoading = false;
+    backendReady = false;
+
+    presets = JSON.parse(JSON.stringify(cfg.presets || []));
+    activeSection = presets[0] || null;
+    customSection = null;
+    hoverT = null;
+    orthoLoaded = false;
+    dsmLoaded = false;
+
+    renderPresetUI();
+    setModeLabel('Mode: Preset sections');
+    document.getElementById('liveSourceValue').textContent =
+      'Built-in section assets • map assets loading...';
+    pointReadout.textContent = 'Loading map...';
+
+    orthoImg.onload = () => {
+      orthoLoaded = true;
+      updateMapShellAspect(orthoImg);
+      drawMap();
+      updateProfile();
+    };
+    orthoImg.onerror = () => {
+      console.error('Failed to load ortho:', cfg.ortho);
+    };
+
+    dsmImg.onload = () => {
+      dsmLoaded = true;
+      drawMap();
+      updateProfile();
+      document.getElementById('liveSourceValue').textContent = cfg.cog
+        ? 'Built-in section assets • ready to load DSM backend on demand'
+        : 'Built-in section assets • display images only';
+      pointReadout.textContent = 'Select a section or click the map';
+    };
+    dsmImg.onerror = () => {
+      console.error('Failed to load DSM display image:', cfg.dsm);
+    };
+
+    orthoImg.src = cfg.ortho;
+    dsmImg.src = cfg.dsm;
+  }
+
+  mapCanvas.addEventListener('click', async evt => {
+    const pos = getCanvasPos(evt, mapCanvas);
+
+    if (drawMode) {
+      if (!drawStart) {
+        drawStart = pos;
+        setModeLabel('Mode: Drawing end point');
+        drawMap();
+        return;
+      }
+
+      customSection = {
+        id: 'custom-' + Date.now(),
+        name: 'Custom Section',
+        color: '#ff4d4f',
+        p1: drawStart,
+        p2: pos
+      };
+
+      drawStart = null;
+      drawMode = false;
+      hoverT = null;
+      setModeLabel('Mode: Custom section ready');
+
+      await ensureBackendReady();
+      updateProfile();
+      return;
+    }
+
+    await ensureBackendReady();
+
+    if (!backendReady) {
+      pointReadout.textContent = 'DSM backend not loaded';
+      document.getElementById('liveMapValue').textContent = 'DSM backend not loaded';
+      return;
+    }
+
+    try {
+      const imgPoint = mapToImageCoordinates(pos.x, pos.y, dsmImg);
+      const trueHeight = imgPoint ? getTrueHeightAtImagePoint(imgPoint.x, imgPoint.y) : null;
+
+      if (trueHeight !== null) {
+        pointReadout.textContent = `Point value: ${trueHeight.toFixed(2)} m`;
+        document.getElementById('liveMapValue').textContent = `${trueHeight.toFixed(2)} m`;
+      } else {
+        pointReadout.textContent = 'No data at this point';
+        document.getElementById('liveMapValue').textContent = 'No data';
+      }
+    } catch (err) {
+      console.error('DSM click read failed:', err);
+      pointReadout.textContent = 'DSM read failed';
+      document.getElementById('liveMapValue').textContent = 'Read failed';
+    }
+  });
+
+  mapCanvas.addEventListener('mousemove', evt => {
+    if (!backendReady) {
+      mapTooltip.style.display = 'none';
+      return;
+    }
+
+    const pos = getCanvasPos(evt, mapCanvas);
+    const imgPoint = mapToImageCoordinates(pos.x, pos.y, dsmImg);
+
+    if (!imgPoint) {
+      mapTooltip.style.display = 'none';
+      return;
+    }
+
+    const value = getTrueHeightAtImagePoint(imgPoint.x, imgPoint.y);
+    if (!Number.isFinite(value)) {
+      mapTooltip.style.display = 'none';
+      return;
+    }
+
+    mapTooltip.style.display = 'block';
+    mapTooltip.style.left = `${evt.offsetX + 16}px`;
+    mapTooltip.style.top = `${Math.max(10, evt.offsetY - 16)}px`;
+    mapTooltip.textContent = `Height: ${value.toFixed(2)} m`;
+  });
+
+  mapCanvas.addEventListener('mouseleave', () => {
+    mapTooltip.style.display = 'none';
+  });
+
+  profileCanvas.addEventListener('mousemove', evt => {
+    if (!backendReady || !profileSamples.length) return;
+
+    const pos = getCanvasPos(evt, profileCanvas);
+    const padL = 58;
+    const padR = 20;
+    const availableW = profileShell.getBoundingClientRect().width - padL - padR;
+    const t = Math.max(0, Math.min(1, (pos.x - padL) / availableW));
+
+    hoverT = t;
+
+    const idx = Math.max(0, Math.min(profileSamples.length - 1, Math.round(t * (profileSamples.length - 1))));
+    const sample = profileSamples[idx];
+
+    if (!sample || !Number.isFinite(sample.value)) {
+      profileTooltip.style.display = 'none';
+      drawProfile();
+      drawMap();
+      return;
+    }
+
+    profileTooltip.style.display = 'block';
+    profileTooltip.style.left = `${evt.offsetX + 16}px`;
+    profileTooltip.style.top = `${Math.max(10, evt.offsetY - 14)}px`;
+    profileTooltip.textContent = `Height: ${sample.value.toFixed(2)} m • ${Math.round(sample.t * 100)}% along section`;
+    document.getElementById('liveProfileValue').textContent = `${sample.value.toFixed(2)} m at ${Math.round(sample.t * 100)}%`;
+
+    drawProfile();
+    drawMap();
+  });
+
+  profileCanvas.addEventListener('mouseleave', () => {
+    hoverT = null;
+    profileTooltip.style.display = 'none';
+    drawProfile();
+    drawMap();
+  });
+
+  document.getElementById('drawBtn').addEventListener('click', () => {
+    drawMode = true;
+    drawStart = null;
+    customSection = null;
+    setModeLabel('Mode: Click start point');
+    drawMap();
+  });
+
+  document.getElementById('clearBtn').addEventListener('click', () => {
+    customSection = null;
+    drawMode = false;
+    drawStart = null;
+    hoverT = null;
+    setModeLabel('Mode: Preset sections');
+    updateProfile();
+  });
+
+  document.getElementById('overlayOpacity').addEventListener('input', drawMap);
+
+  document.getElementById('togglePresetsBtn').addEventListener('click', () => {
+    showPresets = !showPresets;
+    document.getElementById('togglePresetsBtn').textContent = showPresets ? 'Hide preset lines' : 'Show preset lines';
+    document.getElementById('livePresetState').textContent = showPresets ? 'Visible' : 'Hidden';
+    drawMap();
+  });
+
+  function setFocusMode(mode) {
+    document.body.classList.remove('focus-map', 'focus-profile', 'focus-both');
+    if (mode) document.body.classList.add(mode);
+    requestAnimationFrame(() => {
+      if (orthoLoaded) updateMapShellAspect(orthoImg);
+      drawMap();
+      drawProfile();
+    });
+  }
+
+  document.getElementById('expandMapBtn').addEventListener('click', () => {
+    const isOn = document.body.classList.contains('focus-map');
+    setFocusMode(isOn ? '' : 'focus-map');
+  });
+
+  document.getElementById('expandProfileBtn').addEventListener('click', () => {
+    const isOn = document.body.classList.contains('focus-profile');
+    setFocusMode(isOn ? '' : 'focus-profile');
+  });
+
+  document.getElementById('expandBothBtn').addEventListener('click', () => {
+    const isOn = document.body.classList.contains('focus-both');
+    setFocusMode(isOn ? '' : 'focus-both');
+  });
+
+  document.getElementById('areaSelect').addEventListener('change', (e) => {
+    loadArea(e.target.value);
+  });
+
+  window.addEventListener('resize', () => {
+    drawMap();
+    drawProfile();
+  });
+
+  loadArea(currentAreaKey);
+</script>
+
+</body>
+</html>
